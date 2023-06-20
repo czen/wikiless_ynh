@@ -29,6 +29,8 @@ source /usr/share/yunohost/helpers
 # $app is the app id (i.e. 'example' for first install, 
 # or 'example__2', '__3', ... for multi-instance installs)
 #
+ynh_script_progression --message="Installing dependencies..."
+ynh_install_nodejs --nodejs_version=$nodejs_version
 
 #=================================================
 # APP "BUILD" (DEPLOYING SOURCES, VENV, COMPILING ETC)
@@ -48,6 +50,13 @@ ynh_setup_source --dest_dir="$install_dir"
 # permission by default ... however, you may need to recursively reapply
 # ownership to all files such as after the ynh_setup_source step
 chown -R $app:www-data "$install_dir"
+
+ynh_script_progression --message="Installing npm packages $app..." --weight=1
+
+pushd "$install_dir"
+	ynh_use_nodejs
+	ynh_exec_warn_less $ynh_npm install --no-optional
+popd
 
 #=================================================
 # SYSTEM CONFIGURATION
